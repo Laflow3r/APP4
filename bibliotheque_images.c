@@ -12,6 +12,7 @@ int pgm_lire(char nom_fichier[], int matrice[MAX_HAUTEUR][MAX_LARGEUR],
              int *p_lignes, int *p_colonnes, 
              int *p_maxval, struct MetaData *p_metadonnees)
 {
+    
     return OK;
 }
 
