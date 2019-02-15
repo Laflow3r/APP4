@@ -1,6 +1,2 @@
 #Alexandre Lafleur;2018/01/15;Sherbrooke,Quebec.
-P2
-2 3
-255
-10 20 30 
-40 50 60
+FUCK
