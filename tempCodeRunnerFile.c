@@ -1,5 +1,3 @@
-
-    printf("type = '%d'\n", type);
-    printf("length = '%d'\n", type);
-    printf("width = '%d'\n", type);
-    printf("max = '%d'\n", type);
+    // printf("auteur = '%s'\n", *p_metadonnees->auteur);
+    // printf("date = '%s'\n", *p_metadonnees->dateCreation);
+    // printf("date = '%s'\n", *p_metadonnees->lieuCreation);
