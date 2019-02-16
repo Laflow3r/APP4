@@ -112,13 +112,15 @@ int main()
     
     printf("youhou \n");
 
-    int image[256][256];
+    int imagePGM[MAX_HAUTEUR][MAX_LARGEUR];
+    struct RGB imagePPM[MAX_HAUTEUR][MAX_LARGEUR];
     int height = 0;
     int width = 0;
     int max = 0;
     struct MetaData m_metaData;
 
-    pgm_lire("Sherbrooke_Frontenac_nuit.pgm", image, &height, &width, &max, &m_metaData);
+    //pgm_lire("Sherbrooke_Frontenac_nuit.pgm", imagePGM, &height, &width, &max, &m_metaData);
+    ppm_lire("APP4_P3_TEST.txt", imagePPM, &height, &width, &max, &m_metaData);
 
     printf("image =  \n");
 
@@ -135,7 +137,12 @@ int main()
     {
         for(size_t j = 0; j < width; j++)
         {
-            printf(" %5d ", image[i][j]);
+            //printf(" %5d ", imagePGM[i][j]);
+            printf("[");
+            printf(" %5d ", imagePPM[i][j].valeurR);
+            printf(" %5d ", imagePPM[i][j].valeurG);
+            printf(" %5d ", imagePPM[i][j].valeurB);
+            printf("]");
         }
         printf("\n");
 
@@ -229,7 +236,7 @@ int pgm_lire(char nom_fichier[], int matrice[MAX_HAUTEUR][MAX_LARGEUR],
 
     if (type != 2) {
         printf("ERREUR, type = '%d', attendu = 2\n", type);
-        return -1;
+        return -3;
     }
     
     // printf("width = '%d'\n", p_lignes);
@@ -359,9 +366,15 @@ int ppm_lire(char nom_fichier[], struct RGB matrice[MAX_HAUTEUR][MAX_LARGEUR],
     fscanf(fpointer, "%d", p_colonnes);
     fscanf(fpointer, "%d", p_maxval);
 
+    if (p_lignes > 256 || p_colonnes > 256) {
+        printf("ERREUR, nb_lignes = '%d', attendu <256 3\n", p_lignes);
+        return -2;
+    }
+    
+
     if (type != 3) {
         printf("ERREUR, type = '%d', attendu = 3\n", type);
-        return -1;
+        return -3;
     }
     
     for(int m = 0; m < *p_lignes; m++)
@@ -388,5 +401,156 @@ int ppm_lire(char nom_fichier[], struct RGB matrice[MAX_HAUTEUR][MAX_LARGEUR],
     }
     fclose(fpointer);
 
+    return OK;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+int pgm_copier(int matrice1[MAX_HAUTEUR][MAX_LARGEUR], int lignes1, int colonnes1, int matrice2[MAX_HAUTEUR][MAX_LARGEUR], int *p_lignes2, int *p_colonnes2){
+    //erreurs
+    if(lignes1 < 1 || lignes1 >= MAX_HAUTEUR || colonnes1 < 1 || colonnes1 >= MAX_LARGEUR) return -1;
+
+    for(int i = 0; i < lignes1; i++)
+    {
+        for(int j = 0; j < colonnes1; j++)
+        {
+            matrice2[i][j] = matrice1[i][j];
+        }
+    }
+    *p_lignes2 = lignes1;
+    *p_colonnes2 = colonnes1;
+
+    return OK;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+int pgm_creer_histogramme(int matrice[MAX_HAUTEUR][MAX_LARGEUR], int lignes, int colonnes, int histogramme[MAX_VALEUR+1]){
+    if(lignes < 1 || lignes >= MAX_HAUTEUR || colonnes < 1 || colonnes >= MAX_LARGEUR) return -1;
+    int temp;
+    for(int i = 0; i < MAX_VALEUR+1; i++)
+    {
+        histogramme[i] = 0;          
+    }
+    for(int i = 0; i < lignes; i++)
+    {
+        for(int j = 0; j < colonnes; i++)
+        {
+            temp = matrice[i][j];
+            if (temp < 0 || temp > MAX_VALEUR) {
+                return -1;
+            }
+            histogramme[temp]++;          
+        } 
+    }
+
+    return OK;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+int pgm_couleur_preponderante(int matrice[MAX_HAUTEUR][MAX_LARGEUR], int lignes, int colonnes){
+    if(lignes < 1 || lignes >= MAX_HAUTEUR || colonnes < 1 || colonnes >= MAX_LARGEUR) return -1;
+
+    int histogramme[MAX_VALEUR+1];
+    if(pgm_creer_histogramme(matrice,lignes,colonnes,histogramme) == -1) return -1;
+    int max = 0;
+    int indexMax = 0;
+    int reponsesMultiples = 0;
+    for(int i = 0; i < lignes * colonnes; i++)
+    {
+        if (histogramme[i] > max) {
+            max = histogramme[i];
+            indexMax = i;
+            reponsesMultiples = 0;
+        } else if (histogramme[i] == max) {
+            reponsesMultiples = 1;
+        }       
+    }
+    if(reponsesMultiples == 1)return -1;
+
+    return OK;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+int pgm_eclaircir_noircir(int matrice[MAX_HAUTEUR][MAX_LARGEUR], int lignes, int colonnes, int maxval, int valeur){
+    if(lignes < 1 || lignes >= MAX_HAUTEUR || colonnes < 1 || colonnes >= MAX_LARGEUR) return -1;
+    int temp;
+    for(int i = 0; i < lignes; i++)
+    {
+        for(int j = 0; j < colonnes; i++)
+        {
+            temp = matrice[i][j];
+            if(temp > maxval) return -1;
+            if(temp < 0) return -1; 
+            temp = temp + valeur;
+            if(temp > maxval) temp = maxval;
+            if(temp < 0) temp = 0;
+            matrice[i][j] = temp;         
+        } 
+    }
+    return OK;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+int pgm_creer_negatif(int matrice[MAX_HAUTEUR][MAX_LARGEUR], int lignes, int colonnes, int maxval){
+    if(lignes < 1 || lignes >= MAX_HAUTEUR || colonnes < 1 || colonnes >= MAX_LARGEUR) return -1;
+    int temp;
+    for(int i = 0; i < lignes; i++)
+    {
+        for(int j = 0; j < colonnes; i++)
+        {
+            temp = matrice[i][j]; 
+            temp = maxval - temp;
+            if(temp > maxval) return -1;
+            if(temp < 0) return -1;
+            matrice[i][j] = temp;         
+        } 
+    }
+    return OK;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+int pgm_extraire(int matrice[MAX_HAUTEUR][MAX_LARGEUR], int lignes1, int colonnes1, int lignes2, int colonnes2, int *p_lignes, int *p_colonnes){
+    if(lignes1 < 1 || lignes1 >= MAX_HAUTEUR || colonnes1 < 1 || colonnes2 >= MAX_LARGEUR) return -1;
+    if(lignes2 < 1 || lignes2 >= MAX_HAUTEUR || colonnes2 < 1 || colonnes2 >= MAX_LARGEUR) return -1;
+
+    int matriceTemp[MAX_HAUTEUR][MAX_LARGEUR];
+    for(int i = lignes1; i < lignes2; i++)
+    {
+        for(int j = colonnes2; j < colonnes2; j++)
+        {
+            matriceTemp[i - lignes1][j - colonnes1] = matrice[i][j];
+        }
+    }
+    for(int i = 0; i < MAX_HAUTEUR; i++)
+    {
+        for(int j = 0; j < MAX_LARGEUR; j++)
+        {
+            if(i<lignes1 || i>lignes2 || j < colonnes1 || j > colonnes2) matrice[i][j] = 0;
+            else matrice[i][j] = matriceTemp[i][j];
+        }   
+    }
+    
+    return OK;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+int pgm_sont_identiques(int matrice1[MAX_HAUTEUR][MAX_LARGEUR], int lignes1, int colonnes1, int matrice2[MAX_HAUTEUR][MAX_LARGEUR], int lignes2, int colonnes2){
+    if(lignes1 != lignes2 || colonnes1 != colonnes2) return -2;
+    if(lignes1 < 1 || lignes1 >= MAX_HAUTEUR || colonnes1 < 1 || colonnes1 >= MAX_LARGEUR) return -1;
+    for(int i = 0; i < lignes1; i++)
+    {
+        for(int j = 0; j < colonnes1; j++)
+        {
+            if (matrice1[i][j] != matrice2[i][j]) {
+               return 1;
+            }  
+        }
+    }
     return OK;
 }
