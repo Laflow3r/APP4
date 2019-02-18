@@ -120,7 +120,7 @@ int main()
         }
     */
 
-    //MAIN Ã‰CRIRE PGM
+    //MAIN ÉCRIRE PGM
     /*    
         printf("youhou \n");
 
@@ -154,7 +154,7 @@ int main()
         }
     */  
    
-    //MAIN Ã‰CRIRE PPM
+    //MAIN ÉCRIRE PPM
     /* 
         char auteur[] = "Alexandre Lafleur";
         char date[] = "2018-06-18";
