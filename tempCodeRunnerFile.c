@@ -1,3 +1,7 @@
-    // printf("auteur = '%s'\n", *p_metadonnees->auteur);
-    // printf("date = '%s'\n", *p_metadonnees->dateCreation);
-    // printf("date = '%s'\n", *p_metadonnees->lieuCreation);
+    //    fprintf(fp,"#");
+    //    fprintf(fp,metadonnees.auteur);
+    //    fprintf(fp,";");
+    //    fprintf(fp,metadonnees.dateCreation);
+    //    fprintf(fp,";");
+    //    fprintf(fp,metadonnees.lieuCreation);
+    //    fprintf(fp,"\n");

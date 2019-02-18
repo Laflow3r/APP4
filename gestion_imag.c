@@ -126,9 +126,11 @@ int main()
     int imagePGM2[MAX_HAUTEUR][MAX_LARGEUR];
     int height2 = 0;
     int width2 = 0;
-    // //pgm_lire("Sherbrooke_Frontenac_nuit.pgm", imagePGM, &height, &width, &max, &m_metaData);
-    //ppm_lire("APP4_P3_TEST.txt", imagePPM, &height, &width, &max, &m_metaData);
-    pgm_lire("APP4_P2_TEST.txt", imagePGM, &height, &width, &max, &m_metaData);
+    //pgm_lire("Sherbrooke_Frontenac_nuit.pgm", imagePGM, &height, &width, &max, &m_metaData);
+    //pgm_lire("example5000-grey.pgm", imagePGM, &height, &width, &max, &m_metaData);
+    ppm_lire("APP4_P3_TEST.txt", imagePPM, &height, &width, &max, &m_metaData);
+    //pgm_lire("Sherbrooke_Frontenac_nuit.pgm", imagePGM, &height, &width, &max, &m_metaData);
+    //pgm_lire("APP4_P2_TEST.txt", imagePGM, &height, &width, &max, &m_metaData);
 
     printf("image:  \n");
 
@@ -141,14 +143,24 @@ int main()
     printf("lieu = '%s'\n", m_metaData.lieuCreation);
 
 
-    int histogramme[MAX_HAUTEUR * MAX_LARGEUR] = {0};
-    afficher_image_PGM(imagePGM, height, width);
-    //printf("eclaircir = %d \n",pgm_eclaircir_noircir(imagePGM, height, width, max, -100));
-    printf("pgm_copier = %d \n",pgm_copier(imagePGM, height, width,imagePGM2,&height2, &width2));
-    afficher_image_PGM(imagePGM2, height2, width2);
-    //printf("pgm_extraire = %d \n",pgm_extraire(imagePGM,0,0,3,0, &height, &width));
-    printf("pgm_sont_identiques = %d \n",pgm_sont_identiques(imagePGM, height, width,imagePGM2,height2, width2));
+    // int histogramme[MAX_HAUTEUR * MAX_LARGEUR] = {0};
     //afficher_image_PGM(imagePGM, height, width);
+    afficher_image_PPM(imagePPM, height, width);
+    //printf("eclaircir = %d \n",pgm_eclaircir_noircir(imagePGM, height, width, max, -100));
+    //printf("eclaircir = %d \n",pgm_eclaircir_noircir(imagePGM, height, width, max, 50));
+    //printf("pgm_copier = %d \n",pgm_copier(imagePGM, height, width,imagePGM2,&height2, &width2));
+    //printf("pgm_pivoter90 = %d \n",pgm_pivoter90(imagePGM2, &height2, &width2, 0));
+    //printf("pgm_creer_negatif = %d \n",pgm_creer_negatif(imagePGM2, height2, width2,max));
+    //printf("ppm_pivoter90 = %d \n",ppm_pivoter90(imagePPM, &height, &width, 0));
+
+
+    //afficher_image_PGM(imagePGM2, height2, width2);
+    //printf("pgm_extraire = %d \n",pgm_extraire(imagePGM,0,0,3,0, &height, &width));
+    //printf("pgm_sont_identiques = %d \n",pgm_sont_identiques(imagePGM, height, width,imagePGM2,height2, width2));
+    //afficher_image_PGM(imagePGM, height, width);
+
+    //pgm_ecrire("ECRIRE_APP4.pgm",imagePGM2,height2,width2,max,m_metaData);
+    printf("ppm_ecrire = %d \n", ppm_ecrire("ppm_pivoter90.ppm",imagePPM, height, width, max, m_metaData));
 
     return 0;
 }
@@ -232,8 +244,8 @@ int pgm_lire(char nom_fichier[], int matrice[MAX_HAUTEUR][MAX_LARGEUR],
     }
 
     fscanf(fpointer, "%d", &type);
-    fscanf(fpointer, "%d", p_lignes);
     fscanf(fpointer, "%d", p_colonnes);
+    fscanf(fpointer, "%d", p_lignes);
     fscanf(fpointer, "%d", p_maxval);
 
     if (type != 2) {
@@ -282,16 +294,6 @@ int pgm_lire(char nom_fichier[], int matrice[MAX_HAUTEUR][MAX_LARGEUR],
     
 
     fclose(fpointer);
-
-    return OK;
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-int pgm_ecrire(char nom_fichier[], int matrice[MAX_HAUTEUR][MAX_LARGEUR], 
-               int lignes, int colonnes, 
-               int maxval, struct MetaData metadonnees)
-{
 
     return OK;
 }
@@ -364,8 +366,8 @@ int ppm_lire(char nom_fichier[], struct RGB matrice[MAX_HAUTEUR][MAX_LARGEUR],
     }
 
     fscanf(fpointer, "%d", &type);
-    fscanf(fpointer, "%d", p_lignes);
     fscanf(fpointer, "%d", p_colonnes);
+    fscanf(fpointer, "%d", p_lignes);
     fscanf(fpointer, "%d", p_maxval);
 
     if (*p_lignes > 256 || *p_colonnes > 256) {
@@ -410,7 +412,7 @@ int ppm_lire(char nom_fichier[], struct RGB matrice[MAX_HAUTEUR][MAX_LARGEUR],
 
 int pgm_copier(int matrice1[MAX_HAUTEUR][MAX_LARGEUR], int lignes1, int colonnes1, int matrice2[MAX_HAUTEUR][MAX_LARGEUR], int *p_lignes2, int *p_colonnes2){
     //erreurs
-    if(lignes1 < 1 || lignes1 >= MAX_HAUTEUR || colonnes1 < 1 || colonnes1 >= MAX_LARGEUR) return -1;
+    if(lignes1 < 1 || lignes1 > MAX_HAUTEUR || colonnes1 < 1 || colonnes1 > MAX_LARGEUR) return -1;
 
     for(int i = 0; i < lignes1; i++)
     {
@@ -428,7 +430,7 @@ int pgm_copier(int matrice1[MAX_HAUTEUR][MAX_LARGEUR], int lignes1, int colonnes
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 int pgm_creer_histogramme(int matrice[MAX_HAUTEUR][MAX_LARGEUR], int lignes, int colonnes, int histogramme[MAX_VALEUR+1]){
-    if(lignes < 1 || lignes >= MAX_HAUTEUR || colonnes < 1 || colonnes >= MAX_LARGEUR) return -1;
+    if(lignes < 1 || lignes > MAX_HAUTEUR || colonnes < 1 || colonnes > MAX_LARGEUR) return -1;
     int temp;
     for(int i = 0; i < MAX_VALEUR+1; i++)
     {
@@ -453,7 +455,7 @@ int pgm_creer_histogramme(int matrice[MAX_HAUTEUR][MAX_LARGEUR], int lignes, int
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 int pgm_couleur_preponderante(int matrice[MAX_HAUTEUR][MAX_LARGEUR], int lignes, int colonnes){
-    if(lignes < 1 || lignes >= MAX_HAUTEUR || colonnes < 1 || colonnes >= MAX_LARGEUR) return -1;
+    if(lignes < 1 || lignes > MAX_HAUTEUR || colonnes < 1 || colonnes > MAX_LARGEUR) return -1;
 
     int histogramme[MAX_VALEUR+1];
     if(pgm_creer_histogramme(matrice,lignes,colonnes,histogramme) < 0) return -2;
@@ -479,7 +481,7 @@ int pgm_couleur_preponderante(int matrice[MAX_HAUTEUR][MAX_LARGEUR], int lignes,
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 int pgm_eclaircir_noircir(int matrice[MAX_HAUTEUR][MAX_LARGEUR], int lignes, int colonnes, int maxval, int valeur){
-    if(lignes < 1 || lignes >= MAX_HAUTEUR || colonnes < 1 || colonnes >= MAX_LARGEUR) return -1;
+    if(lignes < 1 || lignes > MAX_HAUTEUR || colonnes < 1 || colonnes > MAX_LARGEUR) return -1;
     int temp;
     //printf("lignes = %d\n", lignes);
     //printf("colonnes = %d\n", colonnes);
@@ -505,7 +507,7 @@ int pgm_eclaircir_noircir(int matrice[MAX_HAUTEUR][MAX_LARGEUR], int lignes, int
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 int pgm_creer_negatif(int matrice[MAX_HAUTEUR][MAX_LARGEUR], int lignes, int colonnes, int maxval){
-    if(lignes < 1 || lignes >= MAX_HAUTEUR || colonnes < 1 || colonnes >= MAX_LARGEUR) return -1;
+    if(lignes < 1 || lignes > MAX_HAUTEUR || colonnes < 1 || colonnes > MAX_LARGEUR) return -1;
     int temp;
     for(int i = 0; i < lignes; i++)
     {
@@ -553,7 +555,7 @@ int pgm_extraire(int matrice[MAX_HAUTEUR][MAX_LARGEUR], int lignes1, int colonne
 
 int pgm_sont_identiques(int matrice1[MAX_HAUTEUR][MAX_LARGEUR], int lignes1, int colonnes1, int matrice2[MAX_HAUTEUR][MAX_LARGEUR], int lignes2, int colonnes2){
     if(lignes1 != lignes2 || colonnes1 != colonnes2) return -2;
-    if(lignes1 < 1 || lignes1 >= MAX_HAUTEUR || colonnes1 < 1 || colonnes1 >= MAX_LARGEUR) return -1;
+    if(lignes1 < 1 || lignes1 > MAX_HAUTEUR || colonnes1 < 1 || colonnes1 > MAX_LARGEUR) return -1;
     for(int i = 0; i < lignes1; i++)
     {
         for(int j = 0; j < colonnes1; j++)
@@ -563,6 +565,176 @@ int pgm_sont_identiques(int matrice1[MAX_HAUTEUR][MAX_LARGEUR], int lignes1, int
             }  
         }
     }
+    return OK;
+}
+
+int pgm_ecrire(char nom_fichier[], int matrice[MAX_HAUTEUR][MAX_LARGEUR], 
+               int lignes, int colonnes, 
+               int maxval, struct MetaData metadonnees)
+{
+    FILE * fp;
+  
+   /* open the file for writing*/
+   fp = fopen (nom_fichier,"w");
+    if(!fp)
+    {
+        return -1;
+    }
+    //     fprintf(fp,"#");
+    //    fprintf(fp,metadonnees.auteur);
+    //    fprintf(fp,";");
+    //    fprintf(fp,metadonnees.dateCreation);
+    //    fprintf(fp,";");
+    //    fprintf(fp,metadonnees.lieuCreation);
+        //fprintf(fp,"\n");
+   fprintf(fp,"P2\n%d %d\n%d\n",colonnes,lignes,maxval);
+
+   for(int i = 0; i < lignes; i++)
+   {
+       for(int j = 0; j < colonnes; j++)
+       {
+           fprintf(fp,"%d",matrice[i][j]);
+           fprintf(fp," ");
+       }
+     fprintf(fp,"\n");  
+   }
+
+    return OK;
+}
+
+int pgm_pivoter90(int matrice[MAX_HAUTEUR][MAX_LARGEUR], int *p_lignes, int *p_colonnes, int sens)
+{
+    int i_temp, j_temp, temp = 0;
+    int matrice_temp[MAX_HAUTEUR][MAX_LARGEUR] = {0};
+    if(*p_colonnes < 0 || *p_colonnes > MAX_LARGEUR) return -1;
+    if(*p_lignes < 0 || *p_lignes > MAX_HAUTEUR) return -1;
+
+    for(int i = 0; i < *p_colonnes; i++)
+    {
+        for(int j = 0; j < *p_lignes; j++)
+        {
+            if(sens == 0){
+                j_temp = i;
+                i_temp = *p_lignes - j -1;
+            }
+            if(sens == 1){
+                i_temp = j;
+                j_temp = *p_colonnes - i- 1;
+            }
+            //printf("transfering [%d][%d] = %d to matriceTemp[%d][%d] = ",i_temp, j_temp, matrice[i_temp][j_temp], i,j);
+            
+            matrice_temp[i][j] = matrice[i_temp][j_temp];
+            //printf("%d\n", matrice_temp[i][j]);
+            //matrice_temp[i_temp][j_temp] = matrice[i][j];
+        }
+        
+    }
+
+    temp = *p_lignes;
+    *p_lignes = *p_colonnes;
+    *p_colonnes = temp;
+
+    for(int i = 0; i < *p_lignes; i++)
+    {
+        for(int j = 0; j < *p_colonnes; j++)
+        {
+            matrice[i][j] = matrice_temp[i][j];
+        }
+        
+    }
+
+    //printf("lignes = %d, colonnes = %d\n", *p_lignes, *p_colonnes);
+    return OK;
+}
+
+int ppm_ecrire(char nom_fichier[], struct RGB matrice[MAX_HAUTEUR][MAX_LARGEUR], int lignes, int colonnes, int maxval, struct MetaData metadonnees)
+{
+     FILE * fp;
+    
+    printf("writing to %s\n", nom_fichier);
+    printf("height = '%d'\n", lignes);
+    printf("width = '%d'\n", colonnes);
+    printf("max = '%d'\n", maxval);
+   /* open the file for writing*/
+   fp = fopen (nom_fichier,"w");
+    if(!fp)
+    {
+        return -1;
+    }
+
+    //    fprintf(fp,"#");
+    //    fprintf(fp,metadonnees.auteur);
+    //    fprintf(fp,";");
+    //    fprintf(fp,metadonnees.dateCreation);
+    //    fprintf(fp,";");
+    //    fprintf(fp,metadonnees.lieuCreation);
+    //    fprintf(fp,"\n");
+   fprintf(fp,"P3\n%d %d\n%d\n",colonnes,lignes,maxval);
+
+   for(int i = 0; i < lignes; i++)
+   {
+       for(int j = 0; j < colonnes; j++)
+       {
+           fprintf(fp,"%d",matrice[i][j].valeurR);
+           fprintf(fp," ");
+           fprintf(fp,"%d",matrice[i][j].valeurG);
+           fprintf(fp," ");
+           fprintf(fp,"%d",matrice[i][j].valeurB);
+           fprintf(fp," ");
+       }
+     fprintf(fp,"\n");  
+   }
+
+    return OK;
+}
+
+int ppm_pivoter90(struct RGB matrice[MAX_HAUTEUR][MAX_LARGEUR], int *p_lignes, int *p_colonnes, int sens)
+{
+    int i_temp, j_temp, temp = 0;
+    struct RGB matrice_temp[MAX_HAUTEUR][MAX_LARGEUR] = {0};
+    if(*p_colonnes < 0 || *p_colonnes > MAX_LARGEUR) return -1;
+    if(*p_lignes < 0 || *p_lignes > MAX_HAUTEUR) return -1;
+
+    for(int i = 0; i < *p_colonnes; i++)
+    {
+        for(int j = 0; j < *p_lignes; j++)
+        {
+            if(sens == 0){
+                j_temp = i;
+                i_temp = *p_lignes - j -1;
+            }
+            if(sens == 1){
+                i_temp = j;
+                j_temp = *p_colonnes - i- 1;
+            }
+            //printf("transfering [%d][%d] = %d to matriceTemp[%d][%d] = ",i_temp, j_temp, matrice[i_temp][j_temp], i,j);
+            
+            matrice_temp[i][j].valeurR = matrice[i_temp][j_temp].valeurR;
+            matrice_temp[i][j].valeurG = matrice[i_temp][j_temp].valeurG;
+            matrice_temp[i][j].valeurB = matrice[i_temp][j_temp].valeurB;
+
+            //printf("%d\n", matrice_temp[i][j]);
+            //matrice_temp[i_temp][j_temp] = matrice[i][j];
+        }
+        
+    }
+
+    temp = *p_lignes;
+    *p_lignes = *p_colonnes;
+    *p_colonnes = temp;
+
+    for(int i = 0; i < *p_lignes; i++)
+    {
+        for(int j = 0; j < *p_colonnes; j++)
+        {
+            matrice_temp[i][j].valeurR = matrice[i][j].valeurR;
+            matrice_temp[i][j].valeurG = matrice[i][j].valeurG;
+            matrice_temp[i][j].valeurB = matrice[i][j].valeurB;
+        }
+        
+    }
+
+    //printf("lignes = %d, colonnes = %d\n", *p_lignes, *p_colonnes);
     return OK;
 }
 
