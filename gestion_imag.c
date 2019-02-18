@@ -44,6 +44,8 @@ struct RGB
     int valeurB;
 };
 
+int match(char[], int, char[], int);
+
 // Operations pour les images noir et blanc
 int pgm_lire(char nom_fichier[], int matrice[MAX_HAUTEUR][MAX_LARGEUR], int *p_lignes, int *p_colonnes, int *p_maxval, struct MetaData *p_metadonnees);
 int pgm_ecrire(char nom_fichier[], int matrice[MAX_HAUTEUR][MAX_LARGEUR], int lignes, int colonnes, int maxval, struct MetaData metadonnees);
@@ -55,6 +57,7 @@ int pgm_creer_negatif(int matrice[MAX_HAUTEUR][MAX_LARGEUR], int lignes, int col
 int pgm_extraire(int matrice[MAX_HAUTEUR][MAX_LARGEUR], int lignes1, int colonnes1, int lignes2, int colonnes2, int *p_lignes, int *p_colonnes);
 int pgm_sont_identiques(int matrice1[MAX_HAUTEUR][MAX_LARGEUR], int lignes1, int colonnes1, int matrice2[MAX_HAUTEUR][MAX_LARGEUR], int lignes2, int colonnes2);
 int pgm_pivoter90(int matrice[MAX_HAUTEUR][MAX_LARGEUR], int *p_lignes, int *p_colonnes, int sens);
+int afficher_image_PGM(int imagePGM[MAX_HAUTEUR][MAX_LARGEUR], int lignes, int colonnes);
 
 // Operations pour les images couleurs
 int ppm_lire(char nom_fichier[], struct RGB matrice[MAX_HAUTEUR][MAX_LARGEUR], int *p_lignes, int *p_colonnes, int *p_maxval, struct MetaData *p_metadonnees);
@@ -62,6 +65,7 @@ int ppm_ecrire(char nom_fichier[], struct RGB matrice[MAX_HAUTEUR][MAX_LARGEUR],
 int ppm_copier(struct RGB matrice1[MAX_HAUTEUR][MAX_LARGEUR], int lignes1, int colonnes1, struct RGB matrice2[MAX_HAUTEUR][MAX_LARGEUR], int *p_lignes2, int *p_colonnes2);
 int ppm_sont_identiques(struct RGB matrice1[MAX_HAUTEUR][MAX_LARGEUR], int lignes1, int colonnes1, struct RGB matrice2[MAX_HAUTEUR][MAX_LARGEUR], int lignes2, int colonnes2);
 int ppm_pivoter90(struct RGB matrice[MAX_HAUTEUR][MAX_LARGEUR], int *p_lignes, int *p_colonnes, int sens);
+int afficher_image_PPM(struct RGB imagePPM[MAX_HAUTEUR][MAX_LARGEUR], int lignes, int colonnes);
 
 int image1[MAX_HAUTEUR][MAX_LARGEUR];
 int image2[MAX_HAUTEUR][MAX_LARGEUR];
@@ -110,7 +114,7 @@ int main()
  
     // }
     
-    printf("youhou \n");
+    // printf("youhou \n");
 
     int imagePGM[MAX_HAUTEUR][MAX_LARGEUR];
     struct RGB imagePPM[MAX_HAUTEUR][MAX_LARGEUR];
@@ -119,10 +123,14 @@ int main()
     int max = 0;
     struct MetaData m_metaData;
 
-    //pgm_lire("Sherbrooke_Frontenac_nuit.pgm", imagePGM, &height, &width, &max, &m_metaData);
-    ppm_lire("APP4_P3_TEST.txt", imagePPM, &height, &width, &max, &m_metaData);
+    int imagePGM2[MAX_HAUTEUR][MAX_LARGEUR];
+    int height2 = 0;
+    int width2 = 0;
+    // //pgm_lire("Sherbrooke_Frontenac_nuit.pgm", imagePGM, &height, &width, &max, &m_metaData);
+    //ppm_lire("APP4_P3_TEST.txt", imagePPM, &height, &width, &max, &m_metaData);
+    pgm_lire("APP4_P2_TEST.txt", imagePGM, &height, &width, &max, &m_metaData);
 
-    printf("image =  \n");
+    printf("image:  \n");
 
     printf("height = '%d'\n", height);
     printf("width = '%d'\n", width);
@@ -133,21 +141,15 @@ int main()
     printf("lieu = '%s'\n", m_metaData.lieuCreation);
 
 
-    for(size_t i = 0; i < height; i++)
-    {
-        for(size_t j = 0; j < width; j++)
-        {
-            //printf(" %5d ", imagePGM[i][j]);
-            printf("[");
-            printf(" %5d ", imagePPM[i][j].valeurR);
-            printf(" %5d ", imagePPM[i][j].valeurG);
-            printf(" %5d ", imagePPM[i][j].valeurB);
-            printf("]");
-        }
-        printf("\n");
+    int histogramme[MAX_HAUTEUR * MAX_LARGEUR] = {0};
+    afficher_image_PGM(imagePGM, height, width);
+    //printf("eclaircir = %d \n",pgm_eclaircir_noircir(imagePGM, height, width, max, -100));
+    printf("pgm_copier = %d \n",pgm_copier(imagePGM, height, width,imagePGM2,&height2, &width2));
+    afficher_image_PGM(imagePGM2, height2, width2);
+    //printf("pgm_extraire = %d \n",pgm_extraire(imagePGM,0,0,3,0, &height, &width));
+    printf("pgm_sont_identiques = %d \n",pgm_sont_identiques(imagePGM, height, width,imagePGM2,height2, width2));
+    //afficher_image_PGM(imagePGM, height, width);
 
-    }
-    
     return 0;
 }
 
@@ -366,7 +368,7 @@ int ppm_lire(char nom_fichier[], struct RGB matrice[MAX_HAUTEUR][MAX_LARGEUR],
     fscanf(fpointer, "%d", p_colonnes);
     fscanf(fpointer, "%d", p_maxval);
 
-    if (p_lignes > 256 || p_colonnes > 256) {
+    if (*p_lignes > 256 || *p_colonnes > 256) {
         printf("ERREUR, nb_lignes = '%d', attendu <256 3\n", p_lignes);
         return -2;
     }
@@ -434,12 +436,13 @@ int pgm_creer_histogramme(int matrice[MAX_HAUTEUR][MAX_LARGEUR], int lignes, int
     }
     for(int i = 0; i < lignes; i++)
     {
-        for(int j = 0; j < colonnes; i++)
+        for(int j = 0; j < colonnes; j++)
         {
             temp = matrice[i][j];
             if (temp < 0 || temp > MAX_VALEUR) {
-                return -1;
+                return -2;
             }
+            //printf("temp = %d\n", temp);
             histogramme[temp]++;          
         } 
     }
@@ -453,12 +456,13 @@ int pgm_couleur_preponderante(int matrice[MAX_HAUTEUR][MAX_LARGEUR], int lignes,
     if(lignes < 1 || lignes >= MAX_HAUTEUR || colonnes < 1 || colonnes >= MAX_LARGEUR) return -1;
 
     int histogramme[MAX_VALEUR+1];
-    if(pgm_creer_histogramme(matrice,lignes,colonnes,histogramme) == -1) return -1;
+    if(pgm_creer_histogramme(matrice,lignes,colonnes,histogramme) < 0) return -2;
     int max = 0;
     int indexMax = 0;
     int reponsesMultiples = 0;
-    for(int i = 0; i < lignes * colonnes; i++)
+    for(int i = 0; i < MAX_VALEUR+1; i++)
     {
+        //printf("%d ", histogramme[i]);
         if (histogramme[i] > max) {
             max = histogramme[i];
             indexMax = i;
@@ -467,9 +471,9 @@ int pgm_couleur_preponderante(int matrice[MAX_HAUTEUR][MAX_LARGEUR], int lignes,
             reponsesMultiples = 1;
         }       
     }
-    if(reponsesMultiples == 1)return -1;
-
-    return OK;
+    if(reponsesMultiples == 1)return -3;
+    // ou return n'importe laquelle??
+    return indexMax;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -477,13 +481,18 @@ int pgm_couleur_preponderante(int matrice[MAX_HAUTEUR][MAX_LARGEUR], int lignes,
 int pgm_eclaircir_noircir(int matrice[MAX_HAUTEUR][MAX_LARGEUR], int lignes, int colonnes, int maxval, int valeur){
     if(lignes < 1 || lignes >= MAX_HAUTEUR || colonnes < 1 || colonnes >= MAX_LARGEUR) return -1;
     int temp;
+    //printf("lignes = %d\n", lignes);
+    //printf("colonnes = %d\n", colonnes);
+
     for(int i = 0; i < lignes; i++)
     {
-        for(int j = 0; j < colonnes; i++)
+        for(int j = 0; j < colonnes; j++)
         {
             temp = matrice[i][j];
-            if(temp > maxval) return -1;
-            if(temp < 0) return -1; 
+            //printf("maxval = %d\n", maxval);
+            //printf("temp = %d\n", temp);
+            if(temp > maxval) return -2;
+            if(temp < 0) return -2; 
             temp = temp + valeur;
             if(temp > maxval) temp = maxval;
             if(temp < 0) temp = 0;
@@ -500,12 +509,13 @@ int pgm_creer_negatif(int matrice[MAX_HAUTEUR][MAX_LARGEUR], int lignes, int col
     int temp;
     for(int i = 0; i < lignes; i++)
     {
-        for(int j = 0; j < colonnes; i++)
+        for(int j = 0; j < colonnes; j++)
         {
             temp = matrice[i][j]; 
+            //printf("temp = %d\n", temp);
             temp = maxval - temp;
-            if(temp > maxval) return -1;
-            if(temp < 0) return -1;
+            if(temp > maxval) return -2;
+            if(temp < 0) return -3;
             matrice[i][j] = temp;         
         } 
     }
@@ -515,23 +525,24 @@ int pgm_creer_negatif(int matrice[MAX_HAUTEUR][MAX_LARGEUR], int lignes, int col
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 int pgm_extraire(int matrice[MAX_HAUTEUR][MAX_LARGEUR], int lignes1, int colonnes1, int lignes2, int colonnes2, int *p_lignes, int *p_colonnes){
-    if(lignes1 < 1 || lignes1 >= MAX_HAUTEUR || colonnes1 < 1 || colonnes2 >= MAX_LARGEUR) return -1;
-    if(lignes2 < 1 || lignes2 >= MAX_HAUTEUR || colonnes2 < 1 || colonnes2 >= MAX_LARGEUR) return -1;
+    if(lignes1 < 0 || lignes1 > *p_lignes || colonnes1 < 0 || colonnes2 > *p_colonnes) return -1;
+    if(lignes2 < lignes1 || lignes2 > *p_lignes || colonnes2 < colonnes1 || colonnes2 > *p_colonnes) return -2;
 
     int matriceTemp[MAX_HAUTEUR][MAX_LARGEUR];
-    for(int i = lignes1; i < lignes2; i++)
+    for(int i = lignes1; i <= lignes2; i++)
     {
-        for(int j = colonnes2; j < colonnes2; j++)
+        for(int j = colonnes1; j <= colonnes2; j++)
         {
             matriceTemp[i - lignes1][j - colonnes1] = matrice[i][j];
         }
     }
-    for(int i = 0; i < MAX_HAUTEUR; i++)
+    *p_lignes = lignes2 - lignes1 + 1;
+    *p_colonnes = colonnes2 - colonnes1 + 1;
+    for(int i = 0; i <= *p_lignes; i++)
     {
-        for(int j = 0; j < MAX_LARGEUR; j++)
+        for(int j = 0; j <= *p_colonnes; j++)
         {
-            if(i<lignes1 || i>lignes2 || j < colonnes1 || j > colonnes2) matrice[i][j] = 0;
-            else matrice[i][j] = matriceTemp[i][j];
+            matrice[i][j] = matriceTemp[i][j];
         }   
     }
     
@@ -554,3 +565,37 @@ int pgm_sont_identiques(int matrice1[MAX_HAUTEUR][MAX_LARGEUR], int lignes1, int
     }
     return OK;
 }
+
+int afficher_image_PPM(struct RGB imagePPM[MAX_HAUTEUR][MAX_LARGEUR], int lignes, int colonnes){
+    printf("-------------------------------------------\n");            
+    for(size_t i = 0; i < lignes; i++)
+    {
+        for(size_t j = 0; j < colonnes; j++)
+        {
+            printf("[");            
+            printf(" %5d ", imagePPM[i][j].valeurR);
+            printf(" %5d ", imagePPM[i][j].valeurG);
+            printf(" %5d ", imagePPM[i][j].valeurB);
+            printf("]");
+
+        }
+        printf("\n");
+    }
+    printf("-------------------------------------------\n");            
+
+}
+
+int afficher_image_PGM(int imagePGM[MAX_HAUTEUR][MAX_LARGEUR], int lignes, int colonnes){
+    printf("-------------------------------------------\n");            
+    for(size_t i = 0; i < lignes; i++)
+    {
+        for(size_t j = 0; j < colonnes; j++)
+        {
+            printf(" %5d ", imagePGM[i][j]);
+        }
+        printf("\n");
+    }
+    printf("-------------------------------------------\n");            
+    
+}
+
