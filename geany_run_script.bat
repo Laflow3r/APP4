@@ -1,4 +1,4 @@
-"./gestion_images"
+"./gestion_imag"
 
 pause
 del "%0"
